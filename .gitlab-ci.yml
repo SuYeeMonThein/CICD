@@ -1,0 +1,31 @@
+stages:
+  - validate
+  - deploy
+
+validate_html:
+  stage: validate
+  image: alpine:3.20
+  before_script:
+    - apk add --no-cache tidyhtml
+  script:
+    - test -f index.html
+    - tidy -qe index.html || (tidy -eq index.html && true)
+  artifacts:
+    when: always
+    paths:
+      - index.html
+  only:
+    - merge_requests
+    - main
+
+pages:
+  stage: deploy
+  image: alpine:3.20
+  script:
+    - mkdir -p public
+    - cp index.html public/
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
